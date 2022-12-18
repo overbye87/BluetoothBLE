@@ -3,6 +3,7 @@ import { useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
+  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -114,7 +115,7 @@ const DeviceScreen: React.FC = () => {
   // console.log(text);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.textContainer}>
         <Text style={styles.id}>{`${device.id}`}</Text>
         <Text style={styles.name}>{`${device.name}`}</Text>
@@ -133,9 +134,9 @@ const DeviceScreen: React.FC = () => {
           <Text key={item.uuid}>{`${item.id}: ${item.uuid}`}</Text>
         ))}
       </View>
-      <CustomButton title="SELECT" onPress={handleSelect} loading={isLoading} disabled={selectedDeviceIndex === index} />
+      <CustomButton title="SELECT FOR USE JOYSTICK" onPress={handleSelect} loading={isLoading} disabled={selectedDeviceIndex === index} />
       <View style={styles.buttonContainer}>
-        <CustomButton title="CONNECT" onPress={handleConnect} loading={isLoading} disabled={isConnected} />
+        <CustomButton title="CONNECT DEVICE" onPress={handleConnect} loading={isLoading} disabled={isConnected} />
         <CustomButton title="DISCONNECT" onPress={handleDisconnect} loading={isLoading} disabled={!isConnected} />
       </View>
       <CustomTextInput
@@ -143,8 +144,8 @@ const DeviceScreen: React.FC = () => {
         onChangeText={(text) => setText(text)}
       />
       <CustomButton title="SEND" onPress={handleSend} loading={isLoading} />
-    </View>
-
+      <Text>{JSON.stringify(device, null, 2)}</Text>
+    </ScrollView>
   );
 };
 
