@@ -57,7 +57,8 @@ const Joystick: React.FC = () => {
     const { x, y } = position.current;
     const { x: prevX, y: prevY } = prevPosition.current;
     if (x !== prevX || y !== prevY) {
-      const message = `${scale(y)}`;
+      // const message = `${scale(y)}`;
+      const message = JSON.stringify({ x: scale(x), y: scale(y) });
       prevPosition.current = { ...position.current };
       if (selectedDevice && connected) {
         send(selectedDevice, message);
