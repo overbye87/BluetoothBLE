@@ -17,6 +17,7 @@ export const connectAndDiscoverThunk = createAppAsyncThunk<Device | null>(
         connectedDevice = await connectedDevice.discoverAllServicesAndCharacteristics();
         dispatch(setSelectedDevice(connectedDevice));
         dispatch(setConnected(true));
+        (connectedDevice as Device).onDisconnected(() => dispatch(setConnected(false)));
       } catch (error) {
         const { reason, message } = error as BleError;
         Alert.alert(message, reason as string);
