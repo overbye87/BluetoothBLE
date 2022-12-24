@@ -8,7 +8,9 @@ import {
 } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
 import { PERMISSIONS, requestMultiple, RESULTS } from 'react-native-permissions';
-import { addDevice, clearScannedDevices } from '../../store/app/appSlice';
+import {
+  addDevice, clearScannedDevices, setConnected, setLoading, setSelectedDevice,
+} from '../../store/app/appSlice';
 import { useTypedDispatch, useTypedSelector } from '../../store/store';
 import CustomButton from '../../components/CustomButton/CustomButton';
 
@@ -16,24 +18,26 @@ import { NavigationAppStack } from '../../navigation/AppNavigation';
 
 import { styles } from './Main.style';
 import SelectedDeviceTile from '../../components/SelectedDeviceTile/SelectedDeviceTile';
+import { connectAndDiscoverThunk, disconnectThunk } from '../../store/thunks';
 
 const manager = new BleManager();
 
 const Main: React.FC = () => {
-  const scannedDevices = useTypedSelector(({ main }) => main.scannedDevices);
-  const selectedDeviceIndex = useTypedSelector(({ main }) => main.selectedDeviceIndex);
+  const scannedDevices = useTypedSelector(({ app }) => app.scannedDevices);
+  const selectedDeviceIndex = useTypedSelector(({ app }) => app.selectedDeviceIndex);
+  const selectedDevice = useTypedSelector(({ app }) => app.selectedDevice);
+  const connected = useTypedSelector(({ app }) => app.connected);
+  const loading = useTypedSelector(({ app }) => app.loading);
 
   const dispatch = useTypedDispatch();
   const { navigate } = useNavigation<NavigationAppStack<'Main'>>();
 
-  const [isLoading, setIsLoading] = useState(false);
-
   const handleScanDevices = () => {
-    setIsLoading(true);
+    dispatch(setLoading(true));
     manager.startDeviceScan(null, null, (error, scannedDevice) => {
       if (error) {
         manager.stopDeviceScan();
-        setIsLoading(false);
+        dispatch(setLoading(false));
         Alert.alert(error.name, JSON.stringify(error, null, 2));
       }
       if (scannedDevice) {
@@ -42,7 +46,7 @@ const Main: React.FC = () => {
     });
     setTimeout(() => {
       manager.stopDeviceScan();
-      setIsLoading(false);
+      dispatch(setLoading(false));
     }, 3000);
   };
 
@@ -68,9 +72,37 @@ const Main: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      if (selectedDevice) {
+        dispatch(setConnected(await selectedDevice?.isConnected()));
+      }
+    })();
+  }, [selectedDevice]);
+
+  const handleDisconnect = async () => {
+    await dispatch(disconnectThunk());
+  };
+  const handleConnect = async () => {
+    await dispatch(connectAndDiscoverThunk());
+  };
+
+  const handleClearDevices = async () => {
+    await handleDisconnect();
+    dispatch(clearScannedDevices());
+  };
+
   return (
     <View style={styles.сontainer}>
-      {(selectedDeviceIndex !== null) && <SelectedDeviceTile device={scannedDevices[selectedDeviceIndex]} />}
+      {selectedDevice
+        && (
+          <SelectedDeviceTile
+            device={selectedDevice}
+            isConnected={connected}
+            onDisconnet={handleDisconnect}
+            onConnect={handleConnect}
+          />
+        )}
       <CustomButton
         title="🕹 JOYSTICK"
         onPress={() => navigate('Joystick')}
@@ -83,11 +115,11 @@ const Main: React.FC = () => {
       <CustomButton
         title="🔍 SCAN DEVICES"
         onPress={handleScanDevices}
-        loading={isLoading}
+        loading={loading}
       />
       <CustomButton
         title="💀 CLEAR DEVICES"
-        onPress={() => dispatch(clearScannedDevices())}
+        onPress={handleClearDevices}
       />
     </View>
   );

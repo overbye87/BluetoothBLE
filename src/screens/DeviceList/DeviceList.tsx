@@ -5,7 +5,7 @@ import { useTypedSelector } from '../../store/store';
 import DeviceCard from './components/DeviceCard/DeviceCard';
 
 export const DeviceList: React.FC = () => {
-  const scannedDevices = useTypedSelector(({ main }) => main.scannedDevices);
+  const scannedDevices = useTypedSelector(({ app }) => app.scannedDevices);
   return (
     <View>
       <FlatList

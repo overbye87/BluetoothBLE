@@ -1,34 +1,44 @@
+/* eslint-disable implicit-arrow-linebreak */
 /* eslint-disable no-param-reassign */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Device } from 'react-native-ble-plx';
 import { config } from '../../config';
 import { RootState } from '../store';
 
-interface IInitial {
+interface AppState {
   scannedDevices: Device[],
   selectedDeviceIndex: number | null,
+  selectedDevice: Device | null,
+  connected: boolean,
+  loading: boolean,
 }
 
-const initialState: IInitial = {
+const initialState: AppState = {
   scannedDevices: [],
   selectedDeviceIndex: null,
+  selectedDevice: null,
+  connected: false,
+  loading: false,
 };
 
+const isAlreadyExistInDevices = (devices: Device[], device: Device) =>
+  !!devices.find((dev) => dev.id === device.id);
+
 export const appSlice = createSlice({
-  name: 'main',
+  name: 'App',
   initialState,
   reducers: {
     addDevice: (store, action: PayloadAction<Device>) => {
-      const scannedDevice = action.payload;
-      if (!store.scannedDevices.find((dev) => dev.id === scannedDevice.id)) {
-        const newLength = store.scannedDevices.push(scannedDevice);
-        if (scannedDevice.name === config.bluetooth.name) {
+      const newDevice = action.payload;
+      if (!isAlreadyExistInDevices(store.scannedDevices, newDevice)) {
+        // if not exist
+        const newLength = store.scannedDevices.push(newDevice);
+        if (newDevice.name === config.bluetooth.name) {
+          // this is the device we are looking for?
           store.selectedDeviceIndex = newLength - 1;
+          store.selectedDevice = newDevice;
         }
       }
-    },
-    updateDevice: (store, action: PayloadAction<{ device: Device, index: number }>) => {
-      store.scannedDevices[action.payload.index] = action.payload.device;
     },
     clearScannedDevices: (store) => {
       store.scannedDevices = [];
@@ -37,16 +47,27 @@ export const appSlice = createSlice({
     setSelectedDeviceIndex: (store, action: PayloadAction<number>) => {
       store.selectedDeviceIndex = action.payload;
     },
+    setSelectedDevice: (store, action: PayloadAction<Device>) => {
+      store.selectedDevice = action.payload;
+    },
+    setConnected: (store, action: PayloadAction<boolean>) => {
+      store.connected = action.payload;
+    },
+    setLoading: (store, action: PayloadAction<boolean>) => {
+      store.loading = action.payload;
+    },
   },
 });
 
 export const {
   addDevice,
-  updateDevice,
   clearScannedDevices,
   setSelectedDeviceIndex,
+  setSelectedDevice,
+  setConnected,
+  setLoading,
 } = appSlice.actions;
 
-export const main = (state: RootState) => state.main;
+export const app = (state: RootState) => state.app;
 
 export default appSlice.reducer;

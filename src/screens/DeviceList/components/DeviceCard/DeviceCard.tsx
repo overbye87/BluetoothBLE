@@ -16,7 +16,7 @@ interface Props {
   index: number;
 }
 const DeviceCard: React.FC<Props> = ({ device, index }) => {
-  const selectedDeviceIndex = useTypedSelector(({ main }) => main.selectedDeviceIndex);
+  const selectedDeviceIndex = useTypedSelector(({ app }) => app.selectedDeviceIndex);
   const [isConnected, setIsConnected] = useState(false);
   const { navigate } = useNavigation<NavigationAppStack<'Main'>>();
 

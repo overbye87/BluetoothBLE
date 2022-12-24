@@ -1,18 +1,48 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import {
+  Alert, Text, TouchableOpacity,
+} from 'react-native';
 import { Device } from 'react-native-ble-plx';
 import { styles } from './SelectedDeviceTile.style';
 
 interface Props {
   device: Device;
+  isConnected: boolean;
+  onDisconnet: () => void;
+  onConnect: () => void;
 }
 
-const SelectedDeviceTile: React.FC<Props> = ({ device }) => {
+const SelectedDeviceTile: React.FC<Props> = (props) => {
+  const handleOnPressSelectedDevice = () => {
+    Alert.alert(
+      `${props.device.name} (${props.device.id})`,
+      JSON.stringify(props.device, null, 2),
+      [
+        {
+          text: 'Connect',
+          onPress: props.onConnect,
+          style: 'default',
+        },
+        {
+          text: 'Disconnect',
+          onPress: props.onDisconnet,
+          style: 'destructive',
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+    );
+  };
   return (
-    <View style={styles.container}>
-      {device.name && <Text>{device.name}</Text>}
-      <Text>{device.id}</Text>
-    </View>
+    <TouchableOpacity
+      onPress={handleOnPressSelectedDevice}
+      style={[styles.container, props.isConnected && styles.connected]}
+    >
+      {props.device.name && <Text>{props.device.name}</Text>}
+      <Text>{props.device.id}</Text>
+    </TouchableOpacity>
   );
 };
 

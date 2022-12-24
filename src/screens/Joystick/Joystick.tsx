@@ -2,7 +2,6 @@ import { useNavigation } from '@react-navigation/native';
 import React, {
   useEffect,
   useRef,
-  useState,
 } from 'react';
 import {
   ActivityIndicator,
@@ -10,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { BleError, Device } from 'react-native-ble-plx';
-import { useTypedSelector } from '../../store/store';
+import { useTypedDispatch, useTypedSelector } from '../../store/store';
 import { toBase64 } from '../../utils/base64';
 
 import { config } from '../../config';
@@ -18,6 +17,8 @@ import { NavigationAppStack } from '../../navigation/AppNavigation';
 import { styles } from './Joystick.style';
 import CustomButton from '../../components/CustomButton/CustomButton';
 import MultiTouchJoyStick from '../../components/MultiTouchJoyStick/MultiTouchJoyStick';
+import { setConnected, setSelectedDevice } from '../../store/app/appSlice';
+import { scale } from '../../helpers/helpers';
 
 interface IPosition {
   x: number; y: number;
@@ -25,13 +26,29 @@ interface IPosition {
 
 const Joystick: React.FC = () => {
   const { navigate } = useNavigation<NavigationAppStack<'Joystick'>>();
-  const [isConnected, setIsConnected] = useState(false);
-  const isConnectedRef = useRef(false);
-  const scannedDevices = useTypedSelector(({ main }) => main.scannedDevices);
-  const selectedDeviceIndex = useTypedSelector(({ main }) => main.selectedDeviceIndex);
+  const dispatch = useTypedDispatch();
+
+  const selectedDevice = useTypedSelector(({ app }) => app.selectedDevice);
+  const connected = useTypedSelector(({ app }) => app.connected);
 
   const position = useRef<IPosition>({ x: 0, y: 0 });
   const prevPosition = useRef<IPosition>({ x: 0, y: 0 });
+
+  const connect = async (device: Device) => {
+    let connectedDevice = device;
+    try {
+      if (!await device.isConnected()) {
+        connectedDevice = await device.connect();
+        dispatch(setSelectedDevice(connectedDevice));
+      }
+      connectedDevice = await connectedDevice.discoverAllServicesAndCharacteristics();
+      dispatch(setSelectedDevice(connectedDevice));
+      dispatch(setConnected(true));
+    } catch (error) {
+      const { reason, message } = error as BleError;
+      Alert.alert(message, reason as string);
+    }
+  };
 
   const send = async (device: Device, value: string) => {
     try {
@@ -47,37 +64,21 @@ const Joystick: React.FC = () => {
     }
   };
 
-  const scale = (n: number): number => Math.round(n * config.scaleFactor);
-
   const tick = () => {
     const { x, y } = position.current;
     const { x: prevX, y: prevY } = prevPosition.current;
     if (x !== prevX || y !== prevY) {
-      const message = `x=${scale(x)} y=${scale(y)}`;
+      const message = `${scale(y)}`;
       prevPosition.current = { ...position.current };
-      if ((selectedDeviceIndex !== null) && isConnectedRef.current) {
-        send(scannedDevices[selectedDeviceIndex], message);
+      if (selectedDevice && connected) {
+        send(selectedDevice, message);
       }
-    }
-  };
-
-  const connect = async (device: Device) => {
-    try {
-      if (!await device.isConnected()) {
-        await device.connect();
-      }
-      await device.discoverAllServicesAndCharacteristics();
-      setIsConnected(true);
-      isConnectedRef.current = true;
-    } catch (error) {
-      const { reason, message } = error as BleError;
-      Alert.alert(message, reason as string);
     }
   };
 
   useEffect(() => {
-    if (selectedDeviceIndex !== null) {
-      connect(scannedDevices[selectedDeviceIndex]);
+    if (selectedDevice) {
+      connect(selectedDevice);
     }
     const timerInterval = setInterval(tick, config.interval);
     return (() => {
@@ -92,7 +93,7 @@ const Joystick: React.FC = () => {
           title="BACK"
           onPress={() => navigate('Main')}
         />
-        {!isConnected && <ActivityIndicator size="large" />}
+        {!connected && <ActivityIndicator size="large" />}
       </View>
       <MultiTouchJoyStick
         onValue={

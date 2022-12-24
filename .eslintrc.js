@@ -11,7 +11,7 @@ module.exports = {
         'no-use-before-define': 'off',
         'arrow-body-style': 'off',
         'linebreak-style': 'off',
-        'no-unused-vars': 'warn',
+        'no-unused-vars': ['warn', { vars: 'local', args: 'after-used', ignoreRestSiblings: false }],
         'react/no-unused-prop-types': 'warn',
         'react/function-component-definition': [
           2,
@@ -25,6 +25,7 @@ module.exports = {
           js: 'never', jsx: 'never', ts: 'never', tsx: 'never',
         },
         ],
+        'react/destructuring-assignment': [0, 'always', { ignoreClassFields: true, destructureInSignature: 'ignore' }],
         '@typescript-eslint/no-shadow': ['error'],
         'no-shadow': 'off',
         'no-undef': 'off',

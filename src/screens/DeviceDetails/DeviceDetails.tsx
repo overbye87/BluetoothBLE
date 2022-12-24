@@ -21,8 +21,8 @@ import { setSelectedDeviceIndex } from '../../store/app/appSlice';
 const DeviceScreen: React.FC = () => {
   const { params } = useRoute<RouteAppStack<'DeviceDetails'>>();
   const { index } = params;
-  const device = useTypedSelector(({ main }) => main.scannedDevices[index]);
-  const selectedDeviceIndex = useTypedSelector(({ main }) => main.selectedDeviceIndex);
+  const device = useTypedSelector(({ app }) => app.scannedDevices[index]);
+  const selectedDeviceIndex = useTypedSelector(({ app }) => app.selectedDeviceIndex);
 
   const dispatch = useTypedDispatch();
   const [isConnected, setIsConnected] = useState(false);
