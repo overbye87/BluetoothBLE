@@ -19,6 +19,7 @@ import CustomButton from '../../components/CustomButton/CustomButton';
 import MultiTouchJoyStick from '../../components/MultiTouchJoyStick/MultiTouchJoyStick';
 import { setConnected, setSelectedDevice } from '../../store/app/appSlice';
 import { scale } from '../../helpers/helpers';
+import { connectAndDiscoverThunk } from '../../store/thunks';
 
 interface IPosition {
   x: number; y: number;
@@ -34,20 +35,8 @@ const Joystick: React.FC = () => {
   const position = useRef<IPosition>({ x: 0, y: 0 });
   const prevPosition = useRef<IPosition>({ x: 0, y: 0 });
 
-  const connect = async (device: Device) => {
-    let connectedDevice = device;
-    try {
-      if (!await device.isConnected()) {
-        connectedDevice = await device.connect();
-        dispatch(setSelectedDevice(connectedDevice));
-      }
-      connectedDevice = await connectedDevice.discoverAllServicesAndCharacteristics();
-      dispatch(setSelectedDevice(connectedDevice));
-      dispatch(setConnected(true));
-    } catch (error) {
-      const { reason, message } = error as BleError;
-      Alert.alert(message, reason as string);
-    }
+  const handleConnect = async () => {
+    await dispatch(connectAndDiscoverThunk());
   };
 
   const send = async (device: Device, value: string) => {
@@ -78,13 +67,16 @@ const Joystick: React.FC = () => {
 
   useEffect(() => {
     if (selectedDevice) {
-      connect(selectedDevice);
+      handleConnect();
     }
+  }, []);
+
+  useEffect(() => {
     const timerInterval = setInterval(tick, config.interval);
     return (() => {
       clearInterval(timerInterval);
     });
-  }, []);
+  }, [selectedDevice]);
 
   return (
     <View style={styles.сontainer}>
