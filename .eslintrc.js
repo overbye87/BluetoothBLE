@@ -29,6 +29,7 @@ module.exports = {
         '@typescript-eslint/no-shadow': ['error'],
         'no-shadow': 'off',
         'no-undef': 'off',
+        'implicit-arrow-linebreak': [0, 'warn', 'beside'],
       },
       settings: {
         'import/resolver': { node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] } },
