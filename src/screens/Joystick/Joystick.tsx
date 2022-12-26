@@ -18,7 +18,7 @@ import { styles } from './Joystick.style';
 import CustomButton from '../../components/CustomButton/CustomButton';
 import MultiTouchJoyStick from '../../components/MultiTouchJoyStick/MultiTouchJoyStick';
 import { setConnected, setSelectedDevice } from '../../store/app/appSlice';
-import { scale } from '../../helpers/helpers';
+import { getTrottle, scale } from '../../helpers/helpers';
 import { connectAndDiscoverThunk } from '../../store/thunks';
 
 interface IPosition {
@@ -58,7 +58,7 @@ const Joystick: React.FC = () => {
     const { x: prevX, y: prevY } = prevPosition.current;
     if (x !== prevX || y !== prevY) {
       // const message = `${scale(y)}`;
-      const message = JSON.stringify({ x: scale(x), y: scale(y) });
+      const message = JSON.stringify({ x: scale(x), y: scale(y), ...getTrottle(x, y) });
       prevPosition.current = { ...position.current };
       if (selectedDevice && connected) {
         send(selectedDevice, message);
@@ -91,6 +91,7 @@ const Joystick: React.FC = () => {
       <MultiTouchJoyStick
         onValue={
           (x, y) => {
+            // getTrottle(x, y);
             position.current = { ...position.current, x, y };
           }
         }
