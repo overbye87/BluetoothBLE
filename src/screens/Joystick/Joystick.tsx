@@ -6,9 +6,11 @@ import React, {
 import {
   ActivityIndicator,
   Alert,
+  Text,
   View,
 } from 'react-native';
 import { BleError, Device } from 'react-native-ble-plx';
+import Slider from '@react-native-community/slider';
 import { useTypedDispatch, useTypedSelector } from '../../store/store';
 import { toBase64 } from '../../utils/base64';
 
@@ -20,6 +22,8 @@ import MultiTouchJoyStick from '../../components/MultiTouchJoyStick/MultiTouchJo
 import { setConnected, setSelectedDevice } from '../../store/app/appSlice';
 import { getTrottle, scale } from '../../helpers/helpers';
 import { connectAndDiscoverThunk } from '../../store/thunks';
+import { colors } from '../../styles/colors';
+import CustomLoader from '../../components/CustomLoader/CustomLoader';
 
 interface IPosition {
   x: number; y: number;
@@ -82,11 +86,14 @@ const Joystick: React.FC = () => {
   return (
     <View style={styles.сontainer}>
       <View style={styles.topContainer}>
-        <CustomButton
-          title="BACK"
-          onPress={() => navigate('Main')}
+        <Slider
+          style={{ flex: 1, height: 50, marginTop: 50 }}
+          minimumValue={0}
+          maximumValue={100}
+          minimumTrackTintColor={colors.button}
+          thumbTintColor={colors.button}
+          step={10}
         />
-        {!connected && <ActivityIndicator size="large" />}
       </View>
       <MultiTouchJoyStick
         onValue={
@@ -96,6 +103,13 @@ const Joystick: React.FC = () => {
           }
         }
       />
+      <View style={styles.bottomContainer}>
+        <CustomLoader connected={connected} />
+        <CustomButton
+          title="<<< BACK <<<"
+          onPress={() => navigate('Main')}
+        />
+      </View>
     </View>
   );
 };

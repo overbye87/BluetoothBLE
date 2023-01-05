@@ -13,4 +13,11 @@ export const styles = StyleSheet.create({
     top: 0,
     left: 0,
   },
+  bottomContainer: {
+    justifyContent: 'center',
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+  },
 });
