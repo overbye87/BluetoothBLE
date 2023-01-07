@@ -63,6 +63,7 @@ const Joystick: React.FC = () => {
     if (x !== prevX || y !== prevY) {
       // const message = `${scale(y)}`;
       const message = JSON.stringify({ x: scale(x), y: scale(y), ...getTrottle(x, y) });
+      console.log(message);
       prevPosition.current = { ...position.current };
       if (selectedDevice && connected) {
         send(selectedDevice, message);
@@ -106,7 +107,7 @@ const Joystick: React.FC = () => {
       <View style={styles.bottomContainer}>
         <CustomLoader connected={connected} />
         <CustomButton
-          title="<<< BACK <<<"
+          title="<<< BACK"
           onPress={() => navigate('Main')}
         />
       </View>
